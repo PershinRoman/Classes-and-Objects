@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="GithubDefaultAccount">
-    <option name="defaultAccountId" value="b99f8267-774b-4b97-a1b8-a8b5e0580c1a" />
+  <component name="Black">
+    <option name="sdkName" value="Poetry (ClassesAndObjects)" />
   </component>
 </project>
