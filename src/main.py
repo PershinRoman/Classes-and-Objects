@@ -11,11 +11,13 @@ class Product:
         self.__price = price
 
     def __str__(self):
-        return (
-            f"{self.name}, "
-            f"{self.__price} руб. Остаток: {self.quantity} шт. "
-            f"Описание: {self.description}"
-        )
+        return (f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт.Описание: {self.description}"
+                f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт.")
+
+    def __add__(self, other):
+        if isinstance(other, Product):
+            return (self.price * self.quantity) + (other.price * other.quantity)
+        return NotImplemented
 
     @classmethod
     def new_product(cls, product_info: dict):
@@ -70,13 +72,22 @@ class Category:
     category_count = 0
     product_count = 0
 
-    def __init__(self, name, description, products):
+    def __init__(self, name, description, products=None):
         self.name = name
         self.description = description
         self.products = products
         Category.category_count += 1
         Category.product_count = len(products)
         self.__products = []
+
+    def total_quantity(self):
+        return sum(product.quantity for product in self.products)
+
+    def get_products(self):
+        return [str(product) for product in self.products]
+
+    def __iter__(self):
+        return Categoryiterator(self)
 
     def add_product(self, product: Product):
         if isinstance(
@@ -87,13 +98,31 @@ class Category:
             raise ValueError("Только объекты класса Product могут быть добавлены.")
 
     @property
-    def get_products(self):
+    def get_products1(self):
         return (
             self.__products
         )  # Метод для получения списка продуктов (если это необходимо)
 
     def __str__(self):
-        return f"Категория: {self.name}, Товары: {[str(product) for product in self.__products]}"
+        return (f"Категория: {self.name}, Товары: {[str(product) for product in self.__products]}"
+                f"{self.name}, количество продуктов: {self.total_quantity()}шт.")
+
+
+class Categoryiterator:
+    def __init__(self, category):
+        self.category = category
+        self.index = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.index < len(self.category.products):
+            product = self.category.products[self.index]
+            self.index += 1
+            return product
+        else:
+            raise StopIteration
 
 
 if __name__ == "__main__":
@@ -185,3 +214,27 @@ if __name__ == "__main__":
     print(new_product.price)
     new_product.price = 0
     print(new_product.price)
+
+
+if __name__ == '__main__':
+    product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
+    product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
+    product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
+
+    print(str(product1))
+    print(str(product2))
+    print(str(product3))
+
+    category1 = Category(
+        "Смартфоны",
+        "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
+        [product1, product2, product3]
+    )
+
+    print(str(category1))
+
+    print(category1.products)
+
+    print(product1 + product2)
+    print(product1 + product3)
+    print(product2 + product3)

@@ -126,5 +126,19 @@ def test_add_invalid_product_to_category():
         category.add_product("Некорректный продукт")  # Пробуем добавить строку вместо объекта Product
 
 
+def test_str():
+    product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
+    assert str(product1) == "Samsung Galaxy S23 Ultra, 180000.0 руб. Остаток: 5 шт."
+
+def test_product_addition():
+    product1 = Product("Iphone 15", 8, 210000, 8)
+    product2 = Product("Xiaomi Redmi Note 11", 14, 31000, 14)
+    category = Category("Смартфоны", [product1, product2])
+
+    products = [product for product in category]
+    assert len(products) == 2
+    assert str(products[0]) == "Iphone 15, 210000.0 руб. Остаток: 8 шт."
+    assert str(products[1]) == "Xiaomi Redmi Note 11, 31000.0 руб. Остаток: 14 шт."
+
 if __name__ == "__main__":
     pytest.main()
