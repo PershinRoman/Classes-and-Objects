@@ -65,7 +65,7 @@ class Product:
         return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт. Описание: {self.description}"
 
 
-class Category:
+class Categoryiter:
     name: str
     description: str
     products: list
@@ -76,8 +76,8 @@ class Category:
         self.name = name
         self.description = description
         self.products = products
-        Category.category_count += 1
-        Category.product_count = len(products)
+        Categoryiter.category_count += 1
+        Categoryiter.product_count = len(products)
         self.__products = []
 
     def total_quantity(self):
@@ -87,7 +87,7 @@ class Category:
         return [str(product) for product in self.products]
 
     def __iter__(self):
-        return Categoryiterator(self)
+        return Categoryiter(self)
 
     def add_product(self, product: Product):
         if isinstance(
@@ -108,7 +108,7 @@ class Category:
                 f"{self.name}, количество продуктов: {self.total_quantity()}шт.")
 
 
-class Categoryiterator:
+class Categorypro:
     def __init__(self, category):
         self.category = category
         self.index = 0
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     print(product3.price)
     print(product3.quantity)
 
-    category1 = Category(
+    category1 = Categoryiter(
         "Смартфоны",
         "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
         [product1, product2, product3],
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     print(category1.product_count)
 
     product4 = Product('55" QLED 4K', "Фоновая подсветка", 123000.0, 7)
-    category2 = Category(
+    category2 = Categoryiter(
         "Телевизоры",
         "Современный телевизор, который позволяет наслаждаться просмотром, станет вашим другом и помощником",
         [product4],
@@ -171,8 +171,8 @@ if __name__ == "__main__":
     print(len(category2.products))
     print(category2.products)
 
-    print(Category.category_count)
-    print(Category.product_count)
+    print(Categoryiter.category_count)
+    print(Categoryiter.product_count)
 
 
 if __name__ == "__main__":
@@ -182,7 +182,7 @@ if __name__ == "__main__":
     product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
     product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
 
-    category1 = Category(
+    category1 = Categoryiter(
         "Смартфоны",
         "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
         [product1, product2, product3],
@@ -225,7 +225,7 @@ if __name__ == '__main__':
     print(str(product2))
     print(str(product3))
 
-    category1 = Category(
+    category1 = Categoryiter(
         "Смартфоны",
         "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
         [product1, product2, product3]
