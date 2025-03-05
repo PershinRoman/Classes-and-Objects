@@ -1,3 +1,12 @@
+import datetime
+import json
+import requests
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 class Product:
     name: str
     description: str
@@ -8,43 +17,40 @@ class Product:
         self.name = name
         self.quantity = quantity
         self.description = description
-        self.__price = price
+        self.__price = price  # Цена хранится в приватном атрибуте
 
     def __add__(self, other):
         if isinstance(other, Product):
             return (self.price * self.quantity) + (other.price * other.quantity)
-        raise TypeError
+        raise TypeError("Можно складывать только объекты типа Product")
 
     def __str__(self):
-        return (f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт.Описание: {self.description}"
-                f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт.")
-
+        # Обратите внимание: строка повторяется дважды, как будто склеены две версии.
+        # Если это не задумано, можно оставить один вариант.
+        return (f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт. Описание: {self.description}")
 
     @classmethod
     def new_product(cls, product_info: dict):
         """
         Класс-метод для создания нового объекта Product на основе информации из словаря.
-        :param product_info: Словарь с информацией о продукте
-        :return: Новый экземпляр Product
+        :param product_info: Словарь с информацией о продукте.
+        :return: Новый экземпляр Product.
         """
-        # Извлекаем необходимые параметры из словаря
         name = product_info.get("name")
         price = product_info.get("price")
         description = product_info.get("description", "")
         quantity = product_info.get("quantity", 0)
-
-        # Создаем и возвращаем новый объект Product
         return cls(name, description, price, quantity)
 
     @property
     def price(self):
-        return self.__price  # Геттер для получения цены
+        """Геттер для получения цены"""
+        return self.__price
 
     @price.setter
     def price(self, value):
         if not isinstance(value, (int, float)):
             raise TypeError("Цена должна быть числом.")
-
         if value <= 0:
             raise ValueError("Цена не должна быть нулевая или отрицательная")
         elif value < self.__price:
@@ -57,32 +63,34 @@ class Product:
             else:
                 print("Понижение цены отменено.")
         else:
-            self.__price = value  # Устанавливаем новую цену, если она корректная
+            self.__price = value
 
     def __string__(self):
+        # Этот метод не является стандартным в Python для строкового представления,
+        # его можно использовать по необходимости.
         return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт. Описание: {self.description}"
 
 
 class Smartphone(Product):
     def __init__(self, name, description, price, quantity, efficiency, model, memory, color):
-            super().__init__(name, description, price, quantity)
-            self.efficiency = efficiency
-            self.model = model
-            self.memory = memory
-            self.color = color
+        super().__init__(name, description, price, quantity)
+        self.efficiency = efficiency
+        self.model = model
+        self.memory = memory
+        self.color = color
 
     def __add__(self, other):
         if isinstance(other, Product):
             return (self.price * self.quantity) + (other.price * other.quantity)
-        raise TypeError
+        raise TypeError("Можно складывать только объекты типа Product")
 
 
 class LawnGrass(Product):
     def __init__(self, name, description, price, quantity, country, germination_period, color):
-            super().__init__(name, description, price, quantity)
-            self.country = country
-            self.germination_period = germination_period
-            self.color = color
+        super().__init__(name, description, price, quantity)
+        self.country = country
+        self.germination_period = germination_period
+        self.color = color
 
 
 class Categoryiter:
@@ -95,16 +103,21 @@ class Categoryiter:
     def __init__(self, name, description, products=None):
         self.name = name
         self.description = description
+        # Если список продуктов не передан, создаём пустой список
+        if products is None:
+            products = []
         self.products = products
+        # Обновляем общее количество категорий и продуктов
         Categoryiter.category_count += 1
-        Categoryiter.product_count = len(products)
-        self.__products = []
-
+        Categoryiter.product_count = len(self.products)
+        self.__products = []  # Приватный список, который можем использовать для итерации
 
     def total_quantity(self):
+        """Суммирует количество единиц во всех продуктах в категории."""
         return sum(product.quantity for product in self.products)
 
     def get_products(self):
+        """Возвращает список строковых представлений продуктов."""
         return [str(product) for product in self.products]
 
     def __iter__(self):
@@ -113,21 +126,18 @@ class Categoryiter:
     def add_product(self, product: Product):
         if isinstance(product, Product):
             self.__products.append(product)
-            self.products.append(product)  # Добавляем в основной список продуктов
-            Categoryiter.product_count = len(self.products)  # Обновляем количество продуктов
+            self.products.append(product)  # Добавляем также в основной список продуктов
+            Categoryiter.product_count = len(self.products)
         else:
             raise ValueError("Только объекты класса Product могут быть добавлены.")
-
 
     @property
     def get_products1(self):
         return self.__products
 
     def __str__(self):
-        return (
-            f"Категория: {self.name}, Товары: {[str(product) for product in self.__products]}, "
-            f"количество продуктов: {self.total_quantity()}шт."
-        )
+        return (f"Категория: {self.name}, Товары: {[str(product) for product in self.__products]}, "
+                f"Общее количество единиц: {self.total_quantity()} шт.")
 
 
 class Categorypro:
@@ -147,119 +157,119 @@ class Categorypro:
             raise StopIteration
 
 
-# if __name__ == "__main__":
-#     product1 = Product(
-#         "Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5
-#     )
-#     product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
-#     product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
-#
-#     print(product1.name)
-#     print(product1.description)
-#     print(product1.price)
-#     print(product1.quantity)
-#
-#     print(product2.name)
-#     print(product2.description)
-#     print(product2.price)
-#     print(product2.quantity)
-#
-#     print(product3.name)
-#     print(product3.description)
-#     print(product3.price)
-#     print(product3.quantity)
-#
-#     category1 = Categoryiter(
-#         "Смартфоны",
-#         "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
-#         [product1, product2, product3],
-#     )
-#
-#     print(category1.name == "Смартфоны")
-#     print(category1.description)
-#     print(len(category1.products))
-#     print(category1.category_count)
-#     print(category1.product_count)
-#
-#     product4 = Product('55" QLED 4K', "Фоновая подсветка", 123000.0, 7)
-#     category2 = Categoryiter(
-#         "Телевизоры",
-#         "Современный телевизор, который позволяет наслаждаться просмотром, станет вашим другом и помощником",
-#         [product4],
-#     )
-#
-#     print(category2.name)
-#     print(category2.description)
-#     print(len(category2.products))
-#     print(category2.products)
-#
-#     print(Categoryiter.category_count)
-#     print(Categoryiter.product_count)
-#
-#
-# if __name__ == "__main__":
-#     product1 = Product(
-#         "Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5
-#     )
-#     product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
-#     product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
-#
-#     category1 = Categoryiter(
-#         "Смартфоны",
-#         "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
-#         [product1, product2, product3],
-#     )
-#
-#     print(category1.products)
-#     product4 = Product('55" QLED 4K', "Фоновая подсветка", 123000.0, 7)
-#     category1.add_product(product4)
-#     print(category1.products)
-#     print(category1.product_count)
-#
-#     new_product = Product.new_product(
-#         {
-#             "name": "Samsung Galaxy S23 Ultra",
-#             "description": "256GB, Серый цвет, 200MP камера",
-#             "price": 180000.0,
-#             "quantity": 5,
-#         }
-#     )
-#     print(new_product.name)
-#     print(new_product.description)
-#     print(new_product.price)
-#     print(new_product.quantity)
-#
-#     new_product.price = 800
-#     print(new_product.price)
-#
-#     new_product.price = -100
-#     print(new_product.price)
-#     new_product.price = 0
-#     print(new_product.price)
-#
-#
-# if __name__ == '__main__':
-#     product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
-#     product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
-#     product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
-#
-#     print(str(product1))
-#     print(str(product2))
-#     print(str(product3))
-#
-#     category1 = Categoryiter(
-#         "Смартфоны",
-#         "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
-#         [product1, product2, product3]
-#     )
-#
-#     print(str(category1))
-#
-#     print(category1.products)
-#
-#     print(product1 + product2)
-#     print(product1 + product3)
-#     print(product2 + product3)
+if __name__ == "__main__":
+    product1 = Product(
+        "Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5
+    )
+    product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
+    product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
+
+    print(product1.name)
+    print(product1.description)
+    print(product1.price)
+    print(product1.quantity)
+
+    print(product2.name)
+    print(product2.description)
+    print(product2.price)
+    print(product2.quantity)
+
+    print(product3.name)
+    print(product3.description)
+    print(product3.price)
+    print(product3.quantity)
+
+    category1 = Categoryiter(
+        "Смартфоны",
+        "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
+        [product1, product2, product3],
+    )
+
+    print(category1.name == "Смартфоны")
+    print(category1.description)
+    print(len(category1.products))
+    print(category1.category_count)
+    print(category1.product_count)
+
+    product4 = Product('55" QLED 4K', "Фоновая подсветка", 123000.0, 7)
+    category2 = Categoryiter(
+        "Телевизоры",
+        "Современный телевизор, который позволяет наслаждаться просмотром, станет вашим другом и помощником",
+        [product4],
+    )
+
+    print(category2.name)
+    print(category2.description)
+    print(len(category2.products))
+    print(category2.products)
+
+    print(Categoryiter.category_count)
+    print(Categoryiter.product_count)
+
+
+if __name__ == "__main__":
+    product1 = Product(
+        "Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5
+    )
+    product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
+    product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
+
+    category1 = Categoryiter(
+        "Смартфоны",
+        "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
+        [product1, product2, product3],
+    )
+
+    print(category1.products)
+    product4 = Product('55" QLED 4K', "Фоновая подсветка", 123000.0, 7)
+    category1.add_product(product4)
+    print(category1.products)
+    print(category1.product_count)
+
+    new_product = Product.new_product(
+        {
+            "name": "Samsung Galaxy S23 Ultra",
+            "description": "256GB, Серый цвет, 200MP камера",
+            "price": 180000.0,
+            "quantity": 5,
+        }
+    )
+    print(new_product.name)
+    print(new_product.description)
+    print(new_product.price)
+    print(new_product.quantity)
+
+    new_product.price = 800
+    print(new_product.price)
+
+    # new_product.price = -100
+    # print(new_product.price)
+    new_product.price = 0
+    print(new_product.price)
+
+
+if __name__ == '__main__':
+    product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
+    product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
+    product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
+
+    print(str(product1))
+    print(str(product2))
+    print(str(product3))
+
+    category1 = Categoryiter(
+        "Смартфоны",
+        "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
+        [product1, product2, product3]
+    )
+
+    print(str(category1))
+
+    print(category1.products)
+
+    print(product1 + product2)
+    print(product1 + product3)
+    print(product2 + product3)
 
 if __name__ == '__main__':
     smartphone1 = Smartphone("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5, 95.5,
