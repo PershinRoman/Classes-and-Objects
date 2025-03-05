@@ -1,6 +1,3 @@
-import datetime
-import json
-import requests
 import logging
 
 logging.basicConfig(level=logging.INFO)
