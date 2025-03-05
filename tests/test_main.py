@@ -25,11 +25,23 @@ def test_str_representation():
     assert str(p) == expected
 
 
-def test_product_addition():
+def test_product_addition_same_type():
+    # Тестируем сложение двух объектов одного типа (Product)
     p1 = Product("Bread", "Fresh bread", 2.5, 10)
     p2 = Product("Milk", "Low fat", 1.5, 8)
     total = p1 + p2
-    assert total == (2.5 * 10) + (1.5 * 8)
+    expected_total = (2.5 * 10) + (1.5 * 8)
+    assert total == expected_total
+
+
+def test_addition_different_types():
+    # Сложение объектов разных типов должно приводить к ошибке.
+    phone = Smartphone("iPhone", "Latest Model", 80000, 2, 0.9, "iPhone 14", "128GB", "Black")
+    grass = LawnGrass("Газон", "Искусственный газон", 500, 20, "Россия", "2 недели", "Зеленый")
+    with pytest.raises(TypeError):
+        _ = phone + grass
+    with pytest.raises(TypeError):
+        _ = grass + phone
 
 
 def test_product_add_wrong_type():
@@ -40,14 +52,14 @@ def test_product_add_wrong_type():
 
 def test_price_setter_increase():
     p = Product("Bread", "Fresh bread", 2.5, 10)
-    # Установка цены, которая больше текущей, должна пройти без диалога с пользователем
+    # Установка цены, которая выше текущей, проходит без диалога подтверждения
     p.price = 3.0
     assert p.price == 3.0
 
 
 def test_price_setter_decrease_confirm_yes(monkeypatch, capsys):
     p = Product("Bread", "Fresh bread", 3.0, 10)
-    # Имитируем ввод "y" – подтверждение понижения цены
+    # Имитация ввода "y" для подтверждения понижения цены
     monkeypatch.setattr("builtins.input", lambda prompt: "y")
     p.price = 2.0
     captured = capsys.readouterr().out
@@ -57,7 +69,7 @@ def test_price_setter_decrease_confirm_yes(monkeypatch, capsys):
 
 def test_price_setter_decrease_confirm_no(monkeypatch, capsys):
     p = Product("Bread", "Fresh bread", 3.0, 10)
-    # Имитируем ввод "n" – отмена понижения цены
+    # Имитация ввода "n" для отмены понижения цены
     monkeypatch.setattr("builtins.input", lambda prompt: "n")
     p.price = 2.0
     captured = capsys.readouterr().out
@@ -74,15 +86,16 @@ def test_price_setter_invalid_value():
         p.price = -5
 
 
-def test_smartphone_addition():
-    phone = Smartphone("iPhone", "Latest Model", 80000, 2, 0.9, "iPhone 14", "128GB", "Black")
-    p = Product("Charger", "Fast charger", 1500, 1)
-    total = phone + p
-    expected_total = (80000 * 2) + (1500 * 1)
+def test_smartphone_addition_valid(monkeypatch):
+    # Сложение двух смартфонов одного типа должно работать корректно
+    phone1 = Smartphone("iPhone", "Latest Model", 80000, 2, 0.9, "iPhone 14", "128GB", "Black")
+    phone2 = Smartphone("iPhone", "Latest Model", 80000, 1, 0.9, "iPhone 14", "128GB", "Black")
+    total = phone1 + phone2
+    expected_total = (80000 * 2) + (80000 * 1)
     assert total == expected_total
 
 
-def test_categoryiter(monkeypatch):
+def test_categoryiter():
     cat = Categoryiter("Electronics", "Electronic items", [])
     p1 = Product("TV", "LED TV", 20000, 1)
     p2 = Product("Radio", "Portable radio", 5000, 2)

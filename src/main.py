@@ -18,12 +18,12 @@ class Product:
 
     def __add__(self, other):
         if isinstance(other, Product):
+            if type(self) is not type(other):
+                raise TypeError("Нельзя складывать товары разных типов.")
             return (self.price * self.quantity) + (other.price * other.quantity)
         raise TypeError("Можно складывать только объекты типа Product")
 
     def __str__(self):
-        # Обратите внимание: строка повторяется дважды, как будто склеены две версии.
-        # Если это не задумано, можно оставить один вариант.
         return (f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт. Описание: {self.description}")
 
     @classmethod
@@ -63,8 +63,6 @@ class Product:
             self.__price = value
 
     def __string__(self):
-        # Этот метод не является стандартным в Python для строкового представления,
-        # его можно использовать по необходимости.
         return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт. Описание: {self.description}"
 
 
@@ -77,9 +75,10 @@ class Smartphone(Product):
         self.color = color
 
     def __add__(self, other):
-        if isinstance(other, Product):
-            return (self.price * self.quantity) + (other.price * other.quantity)
-        raise TypeError("Можно складывать только объекты типа Product")
+        if isinstance(other, Smartphone):
+            # Вызываем реализацию сложения родительского класса
+            return super().__add__(other)
+        raise TypeError("Нельзя складывать товары разных типов.")
 
 
 class LawnGrass(Product):
@@ -88,6 +87,11 @@ class LawnGrass(Product):
         self.country = country
         self.germination_period = germination_period
         self.color = color
+
+    def __add__(self, other):
+        if isinstance(other, LawnGrass):
+            return super().__add__(other)
+        raise TypeError("Нельзя складывать товары разных типов.")
 
 
 class Categoryiter:
@@ -107,7 +111,7 @@ class Categoryiter:
         # Обновляем общее количество категорий и продуктов
         Categoryiter.category_count += 1
         Categoryiter.product_count = len(self.products)
-        self.__products = []  # Приватный список, который можем использовать для итерации
+        self.__products = []  # Приватный список для итерации
 
     def total_quantity(self):
         """Суммирует количество единиц во всех продуктах в категории."""
