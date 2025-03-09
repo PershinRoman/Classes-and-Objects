@@ -2,7 +2,7 @@ import json
 import os
 
 
-from src.main import Product, Category
+from src.main import Product, Categoryiter
 
 
 def read_json(path: str) -> dict:
@@ -24,7 +24,7 @@ def create_objects(products):
                 quantity=product["quantity"]
             ) for product in category_data["products"]
         ]
-        category = Category(
+        category = Categoryiter(
             name=category_data["name"],
             description=category_data["description"],
             products=products

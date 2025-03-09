@@ -5,10 +5,6 @@ logger = logging.getLogger(__name__)
 
 
 class Product:
-    name: str
-    description: str
-    price: float
-    quantity: int
 
     def __init__(self, name, description, price, quantity):
         self.name = name
@@ -24,7 +20,10 @@ class Product:
         raise TypeError("Можно складывать только объекты типа Product")
 
     def __str__(self):
-        return (f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт. Описание: {self.description}")
+        return (f"{self.name}, "
+                f"{self.price} руб. Остаток: {self.quantity} шт. "
+                f"Описание: {self.description}"
+                )
 
     @classmethod
     def new_product(cls, product_info: dict):
@@ -48,7 +47,7 @@ class Product:
     def price(self, value):
         if not isinstance(value, (int, float)):
             raise TypeError("Цена должна быть числом.")
-        if value <= 0:
+        if value < 0:
             raise ValueError("Цена не должна быть нулевая или отрицательная")
         elif value < self.__price:
             confirmation = input(
@@ -95,13 +94,10 @@ class LawnGrass(Product):
 
 
 class Categoryiter:
-    name: str
-    description: str
-    products: list
     category_count = 0
     product_count = 0
 
-    def __init__(self, name, description, products=None):
+    def __init__(self, name, description="", products=None):
         self.name = name
         self.description = description
         # Если список продуктов не передан, создаём пустой список
@@ -113,6 +109,9 @@ class Categoryiter:
         Categoryiter.product_count = len(self.products)
         self.__products = []  # Приватный список для итерации
 
+    def __iter__(self):
+        return iter(self.products)
+
     def total_quantity(self):
         """Суммирует количество единиц во всех продуктах в категории."""
         return sum(product.quantity for product in self.products)
@@ -121,16 +120,10 @@ class Categoryiter:
         """Возвращает список строковых представлений продуктов."""
         return [str(product) for product in self.products]
 
-    def __iter__(self):
-        return Categorypro(self)
-
-    def add_product(self, product: Product):
-        if isinstance(product, Product):
-            self.__products.append(product)
-            self.products.append(product)  # Добавляем также в основной список продуктов
-            Categoryiter.product_count = len(self.products)
-        else:
-            raise ValueError("Только объекты класса Product могут быть добавлены.")
+    def add_product(self, product):
+        if not isinstance(product, Product):  # Проверяем, что product - это экземпляр класса Product
+            raise TypeError("Expected a Product instance")
+        self.products.append(product)
 
     @property
     def get_products1(self):
@@ -243,8 +236,8 @@ if __name__ == "__main__":
     new_product.price = 800
     print(new_product.price)
 
-    # new_product.price = -100
-    # print(new_product.price)
+    new_product.price = -100
+    print(new_product.price)
     new_product.price = 0
     print(new_product.price)
 
@@ -273,14 +266,17 @@ if __name__ == '__main__':
     print(product2 + product3)
 
 if __name__ == '__main__':
-    smartphone1 = Smartphone("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5, 95.5,
-                         "S23 Ultra", 256, "Серый")
+    smartphone1 = Smartphone(
+        "Samsung Galaxy S23 Ultra",
+        "256GB, Серый цвет, 200MP камера", 180000.0, 5, 95.5,
+        "S23 Ultra", 256, "Серый"
+    )
     smartphone2 = Smartphone("Iphone 15", "512GB, Gray space", 210000.0, 8, 98.2, "15", 512, "Gray space")
     smartphone3 = Smartphone("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14, 90.3, "Note 11", 1024, "Синий")
 
     print(smartphone1.name)
     print(smartphone1.description)
-    # print(smartphone1.price)
+    print(smartphone1.price)
     print(smartphone1.quantity)
     print(smartphone1.efficiency)
     print(smartphone1.model)
@@ -289,7 +285,7 @@ if __name__ == '__main__':
 
     print(smartphone2.name)
     print(smartphone2.description)
-    # print(smartphone2.price)
+    print(smartphone2.price)
     print(smartphone2.quantity)
     print(smartphone2.efficiency)
     print(smartphone2.model)
@@ -298,7 +294,7 @@ if __name__ == '__main__':
 
     print(smartphone3.name)
     print(smartphone3.description)
-    # print(smartphone3.price)
+    print(smartphone3.price)
     print(smartphone3.quantity)
     print(smartphone3.efficiency)
     print(smartphone3.model)

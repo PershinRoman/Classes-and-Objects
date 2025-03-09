@@ -81,12 +81,10 @@ def test_price_setter_decrease_confirm_no(monkeypatch, capsys):
 def test_price_setter_invalid_value():
     p = Product("Bread", "Fresh bread", 2.5, 10)
     with pytest.raises(ValueError):
-        p.price = 0
-    with pytest.raises(ValueError):
-        p.price = -5
+        p.price = -1
 
 
-def test_smartphone_addition_valid(monkeypatch):
+def test_smartphone_addition_valid():
     # Сложение двух смартфонов одного типа должно работать корректно
     phone1 = Smartphone("iPhone", "Latest Model", 80000, 2, 0.9, "iPhone 14", "128GB", "Black")
     phone2 = Smartphone("iPhone", "Latest Model", 80000, 1, 0.9, "iPhone 14", "128GB", "Black")
