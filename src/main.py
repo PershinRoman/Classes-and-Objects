@@ -19,7 +19,15 @@ class BaseProduct(ABC):
         pass
 
 
-class Product(BaseProduct):
+class MixinsProduct:
+    def format_info(self):
+        """Форматирует информацию о продукте для отображения."""
+        return (f"{self.name}, "
+                f"{self.price} руб. Остаток: {self.quantity} шт. "
+                f"Описание: {self.description}")
+
+
+class Product(BaseProduct, MixinsProduct):
 
     def __init__(self, name, description, price, quantity):
         self.name = name
@@ -164,15 +172,6 @@ class Categorypro:
             return product
         else:
             raise StopIteration
-
-
-class MixinsProduct(Product):
-    ID = 1
-
-    def __init__(self):
-        super().__init__()
-        self.id = id
-        MixinsProduct.ID += 1
 
 
 if __name__ == "__main__":

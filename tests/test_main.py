@@ -1,5 +1,8 @@
 import pytest
-from src.main import Product, Smartphone, LawnGrass, Categoryiter
+from src.main import Smartphone, LawnGrass, Categoryiter, Product
+from src.main import MixinsProduct, BaseProduct
+import unittest
+from unittest.mock import patch
 
 
 def test_product_creation():
@@ -112,3 +115,43 @@ def test_categoryiter():
     assert isinstance(strings, list)
     for s in strings:
         assert isinstance(s, str)
+
+
+class TestProductMixin(unittest.TestCase):
+    def setUp(self):
+        """Создаем объект Product для тестов."""
+        self.product = Product(name="Смартфон", description="Современный смартфон", price=999, quantity=10)
+
+    def test_format_info(self):
+        """Тестируем метод format_info."""
+        expected_info = "Смартфон, 999 руб. Остаток: 10 шт. Описание: Современный смартфон"
+        self.assertEqual(self.product.format_info(), expected_info)
+
+    def test_price_setter(self):
+        """Тестируем установку цены."""
+        self.product.price = 899
+        self.assertEqual(self.product.price, 899)
+
+    def test_price_setter_negative(self):
+        """Тестируем установку отрицательной цены."""
+        with self.assertRaises(ValueError):
+            self.product.price = -100
+
+    def test_price_setter_non_numeric(self):
+        """Тестируем установку нечислового значения цены."""
+        with self.assertRaises(TypeError):
+            self.product.price = "двести"
+
+    def test_price_setter_lowering(self):
+        """Тестируем понижение цены с подтверждением."""
+        self.product.price = 899  # Установим новую цену
+        with unittest.mock.patch('builtins.input', side_effect=['y']):
+            self.product.price = 850  # Понижаем цену
+        self.assertEqual(self.product.price, 850)
+
+    def test_price_setter_lowering_cancel(self):
+        """Тестируем отмену понижения цены."""
+        self.product.price = 899  # Установим новую цену
+        with unittest.mock.patch('builtins.input', side_effect=['n']):
+            self.product.price = 850  # Пытаемся понизить цену
+        self.assertEqual(self.product.price, 899)  # Цена должна остаться прежней
