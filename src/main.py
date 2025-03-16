@@ -169,6 +169,16 @@ class Categoryiter:
                 f"Общее количество единиц: {self.total_quantity()} шт.")
 
 
+class DummyProduct:
+    def __init__(self, name):
+        self.name = name
+
+
+class DummyCategory:
+    def __init__(self, products):
+        self.products = products
+
+
 class Categorypro:
     def __init__(self, category):
         self.category = category

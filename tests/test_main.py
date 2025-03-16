@@ -1,6 +1,7 @@
 import pytest
-from src.main import Smartphone, LawnGrass, Categoryiter, Product
+from src.main import Smartphone, LawnGrass, Categoryiter, Product, Categorypro, DummyCategory, DummyProduct
 import unittest
+from unittest.mock import patch
 
 
 def test_product_creation():
@@ -185,3 +186,52 @@ def test_average_price_return_type():
     result = category.middle_price()
 
     assert isinstance(result, int)
+
+
+def test_iteration_manual():
+    """
+    Проверяет работу итератора: по отдельности вызывая next()
+    и проверяя, что после прохождения всех товаров выбрасывается StopIteration.
+    """
+    products = [DummyProduct("Товар A"), DummyProduct("Товар B")]
+    category = DummyCategory(products)
+    cat_iter = Categorypro(category)
+
+    # Проверка первого товара
+    product_a = next(cat_iter)
+    assert product_a.name == "Товар A"
+
+    # Проверка второго товара
+    product_b = next(cat_iter)
+    assert product_b.name == "Товар B"
+
+    # При следующем вызове итератора должно быть исключение StopIteration
+    with pytest.raises(StopIteration):
+        next(cat_iter)
+
+def test_iteration_loop():
+    """
+    Проверяет работу итератора при использовании цикла for.
+    """
+    products = [
+        DummyProduct("Продукт 1"),
+        DummyProduct("Продукт 2"),
+        DummyProduct("Продукт 3")
+    ]
+    category = DummyCategory(products)
+    cat_iter = Categorypro(category)
+
+    # Собираем имена товаров, проходя по итератору
+    product_names = [product.name for product in cat_iter]
+
+    assert product_names == ["Продукт 1", "Продукт 2", "Продукт 3"]
+
+def test_empty_category():
+    """
+    Проверяет, что при пустой категории сразу выбрасывается StopIteration.
+    """
+    category = DummyCategory([])
+    cat_iter = Categorypro(category)
+
+    with pytest.raises(StopIteration):
+        next(cat_iter)
