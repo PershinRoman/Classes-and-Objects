@@ -1,49 +1,237 @@
-
-from src.main import Product, Category
-
-
-def test_product_initialization():
-    product = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
-    assert product.name == "Xiaomi Redmi Note 11"
-    assert product.description == "1024GB, Синий"
-    assert product.price == 31000.0
-    assert product.quantity == 14
+import pytest
+from src.main import Smartphone, LawnGrass, Categoryiter, Product, Categorypro, DummyCategory, DummyProduct
+import unittest
+from unittest.mock import patch
 
 
-def test_category_initialization():
-    product4 = Product("55\" QLED 4K", "Фоновая подсветка", 123000.0, 7)
-    category2 = Category("Телевизоры",
-                         "Современный телевизор, который позволяет наслаждаться просмотром, станет вашим другом и помощником",
-                         [product4])
-
-    assert category2.name == "Телевизоры"
-    assert category2.description == "Современный телевизор, который позволяет наслаждаться просмотром, станет вашим другом и помощником"
-    assert len(category2.products) == 1  # Проверяем количество продуктов
-    assert Category.category_count == 1  # Проверяем количество категорий
-    assert Category.product_count == 1  # Проверяем количество продуктов
+def test_product_creation():
+    p = Product("Bread", "Fresh bread", 2.5, 10)
+    assert p.name == "Bread"
+    assert p.description == "Fresh bread"
+    assert p.price == 2.5
+    assert p.quantity == 10
 
 
-def test_product_count():
-    product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
-    product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
-    product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
-    category1 = Category("Смартфоны",
-                         "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
-                         [product1, product2, product3])
-
-    assert Category.product_count == 3  # Проверяем количество продуктов
+def test_new_product():
+    info = {"name": "Milk", "price": 1.5, "description": "Low fat", "quantity": 8}
+    p = Product.new_product(info)
+    assert p.name == "Milk"
+    assert p.price == 1.5
+    assert p.description == "Low fat"
+    assert p.quantity == 8
 
 
-def test_category_count():
-    product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
-    product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
-    product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
-    product4 = Product("55\" QLED 4K", "Фоновая подсветка", 123000.0, 7)
-    category1 = Category("Смартфоны",
-                         "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
-                         [product1, product2, product3])
-    category2 = Category("Телевизоры",
-                         "Современный телевизор, который позволяет наслаждаться просмотром, станет вашим другом и помощником",
-                         [product4])
+def test_str_representation():
+    p = Product("Eggs", "Farm fresh eggs", 3.0, 12)
+    expected = "Eggs, 3.0 руб. Остаток: 12 шт. Описание: Farm fresh eggs"
+    assert str(p) == expected
 
-    assert Category.category_count == 4  # Проверяем количество категорий
+
+def test_product_addition_same_type():
+    # Тестируем сложение двух объектов одного типа (Product)
+    p1 = Product("Bread", "Fresh bread", 2.5, 10)
+    p2 = Product("Milk", "Low fat", 1.5, 8)
+    total = p1 + p2
+    expected_total = (2.5 * 10) + (1.5 * 8)
+    assert total == expected_total
+
+
+def test_addition_different_types():
+    # Сложение объектов разных типов должно приводить к ошибке.
+    phone = Smartphone("iPhone", "Latest Model", 80000, 2, 0.9, "iPhone 14", "128GB", "Black")
+    grass = LawnGrass("Газон", "Искусственный газон", 500, 20, "Россия", "2 недели", "Зеленый")
+    with pytest.raises(TypeError):
+        _ = phone + grass
+    with pytest.raises(TypeError):
+        _ = grass + phone
+
+
+def test_product_add_wrong_type():
+    p = Product("Bread", "Fresh bread", 2.5, 10)
+    with pytest.raises(TypeError):
+        _ = p + "not a product"
+
+
+def test_price_setter_increase():
+    p = Product("Bread", "Fresh bread", 2.5, 10)
+    # Установка цены, которая выше текущей, проходит без диалога подтверждения
+    p.price = 3.0
+    assert p.price == 3.0
+
+
+def test_price_setter_decrease_confirm_yes(monkeypatch, capsys):
+    p = Product("Bread", "Fresh bread", 3.0, 10)
+    # Имитация ввода "y" для подтверждения понижения цены
+    monkeypatch.setattr("builtins.input", lambda prompt: "y")
+    p.price = 2.0
+    captured = capsys.readouterr().out
+    assert "Цена успешно понижена до 2.0." in captured
+    assert p.price == 2.0
+
+
+def test_price_setter_decrease_confirm_no(monkeypatch, capsys):
+    p = Product("Bread", "Fresh bread", 3.0, 10)
+    # Имитация ввода "n" для отмены понижения цены
+    monkeypatch.setattr("builtins.input", lambda prompt: "n")
+    p.price = 2.0
+    captured = capsys.readouterr().out
+    assert "Понижение цены отменено." in captured
+    # Цена должна остаться прежней
+    assert p.price == 3.0
+
+
+def test_price_setter_invalid_value():
+    p = Product("Bread", "Fresh bread", 2.5, 10)
+    with pytest.raises(ValueError):
+        p.price = -1
+
+
+def test_smartphone_addition_valid():
+    # Сложение двух смартфонов одного типа должно работать корректно
+    phone1 = Smartphone("iPhone", "Latest Model", 80000, 2, 0.9, "iPhone 14", "128GB", "Black")
+    phone2 = Smartphone("iPhone", "Latest Model", 80000, 1, 0.9, "iPhone 14", "128GB", "Black")
+    total = phone1 + phone2
+    expected_total = (80000 * 2) + (80000 * 1)
+    assert total == expected_total
+
+
+def test_categoryiter():
+    cat = Categoryiter("Electronics", "Electronic items", [])
+    p1 = Product("TV", "LED TV", 20000, 1)
+    p2 = Product("Radio", "Portable radio", 5000, 2)
+    cat.add_product(p1)
+    cat.add_product(p2)
+
+    # Проверяем итерацию
+    products = list(cat)
+    assert products == [p1, p2]
+
+    # Проверяем общее количество единиц в категории
+    assert cat.total_quantity() == (1 + 2)
+
+    # Проверяем, что метод get_products возвращает строковые представления продуктов
+    strings = cat.get_products()
+    assert isinstance(strings, list)
+    for s in strings:
+        assert isinstance(s, str)
+
+
+class TestProductMixin(unittest.TestCase):
+    def setUp(self):
+        """Создаем объект Product для тестов."""
+        self.product = Product(name="Смартфон", description="Современный смартфон", price=999, quantity=10)
+
+    def test_format_info(self):
+        """Тестируем метод format_info."""
+        expected_info = "Смартфон, 999 руб. Остаток: 10 шт. Описание: Современный смартфон"
+        self.assertEqual(self.product.format_info(), expected_info)
+
+    def test_price_setter(self):
+        """Тестируем установку цены."""
+        self.product.price = 899
+        self.assertEqual(self.product.price, 899)
+
+    def test_price_setter_negative(self):
+        """Тестируем установку отрицательной цены."""
+        with self.assertRaises(ValueError):
+            self.product.price = -100
+
+    def test_price_setter_non_numeric(self):
+        """Тестируем установку нечислового значения цены."""
+        with self.assertRaises(TypeError):
+            self.product.price = "двести"
+
+    def test_price_setter_lowering(self):
+        """Тестируем понижение цены с подтверждением."""
+        self.product.price = 899  # Установим новую цену
+        with unittest.mock.patch('builtins.input', side_effect=['y']):
+            self.product.price = 850  # Понижаем цену
+        self.assertEqual(self.product.price, 850)
+
+    def test_price_setter_lowering_cancel(self):
+        """Тестируем отмену понижения цены."""
+        self.product.price = 899  # Установим новую цену
+        with unittest.mock.patch('builtins.input', side_effect=['n']):
+            self.product.price = 850  # Пытаемся понизить цену
+        self.assertEqual(self.product.price, 899)  # Цена должна остаться прежней
+
+
+def test_average_price_non_empty():
+    products = [
+        Product("Товар A", [], 100, []),
+        Product("Товар B", [], 200, []),
+        Product("Товар C", [], 300, [])
+    ]
+    category = Categoryiter("Тестовая категория", [], [])
+    expected_average = 0
+    assert category.middle_price() == expected_average
+
+
+# Тест для категории без товаров
+def test_average_price_empty_category():
+    empty_category = Categoryiter("Пустая категория", [], [])
+
+    # Если товаров нет, метод должен вернуть 0
+    expected_average = 0
+    assert empty_category.middle_price() == expected_average
+
+
+# Дополнительный тест: проверка типа возвращаемого значения
+def test_average_price_return_type():
+    products = [
+        Product("Товар A", [], 50, []),
+        Product("Товар B", [], 150, [])
+    ]
+    category = Categoryiter("Категория", products)
+    result = category.middle_price()
+
+    assert isinstance(result, int)
+
+
+def test_iteration_manual():
+    """
+    Проверяет работу итератора: по отдельности вызывая next()
+    и проверяя, что после прохождения всех товаров выбрасывается StopIteration.
+    """
+    products = [DummyProduct("Товар A"), DummyProduct("Товар B")]
+    category = DummyCategory(products)
+    cat_iter = Categorypro(category)
+
+    # Проверка первого товара
+    product_a = next(cat_iter)
+    assert product_a.name == "Товар A"
+
+    # Проверка второго товара
+    product_b = next(cat_iter)
+    assert product_b.name == "Товар B"
+
+    # При следующем вызове итератора должно быть исключение StopIteration
+    with pytest.raises(StopIteration):
+        next(cat_iter)
+
+def test_iteration_loop():
+    """
+    Проверяет работу итератора при использовании цикла for.
+    """
+    products = [
+        DummyProduct("Продукт 1"),
+        DummyProduct("Продукт 2"),
+        DummyProduct("Продукт 3")
+    ]
+    category = DummyCategory(products)
+    cat_iter = Categorypro(category)
+
+    # Собираем имена товаров, проходя по итератору
+    product_names = [product.name for product in cat_iter]
+
+    assert product_names == ["Продукт 1", "Продукт 2", "Продукт 3"]
+
+def test_empty_category():
+    """
+    Проверяет, что при пустой категории сразу выбрасывается StopIteration.
+    """
+    category = DummyCategory([])
+    cat_iter = Categorypro(category)
+
+    with pytest.raises(StopIteration):
+        next(cat_iter)
