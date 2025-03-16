@@ -1,8 +1,6 @@
 import pytest
 from src.main import Smartphone, LawnGrass, Categoryiter, Product
-from src.main import MixinsProduct, BaseProduct
 import unittest
-from unittest.mock import patch
 
 
 def test_product_creation():
@@ -155,3 +153,35 @@ class TestProductMixin(unittest.TestCase):
         with unittest.mock.patch('builtins.input', side_effect=['n']):
             self.product.price = 850  # Пытаемся понизить цену
         self.assertEqual(self.product.price, 899)  # Цена должна остаться прежней
+
+
+def test_average_price_non_empty():
+    products = [
+        Product("Товар A", [], 100, []),
+        Product("Товар B", [], 200, []),
+        Product("Товар C", [], 300, [])
+    ]
+    category = Categoryiter("Тестовая категория", [], [])
+    expected_average = 0
+    assert category.middle_price() == expected_average
+
+
+# Тест для категории без товаров
+def test_average_price_empty_category():
+    empty_category = Categoryiter("Пустая категория", [], [])
+
+    # Если товаров нет, метод должен вернуть 0
+    expected_average = 0
+    assert empty_category.middle_price() == expected_average
+
+
+# Дополнительный тест: проверка типа возвращаемого значения
+def test_average_price_return_type():
+    products = [
+        Product("Товар A", [], 50, []),
+        Product("Товар B", [], 150, [])
+    ]
+    category = Categoryiter("Категория", products)
+    result = category.middle_price()
+
+    assert isinstance(result, int)
